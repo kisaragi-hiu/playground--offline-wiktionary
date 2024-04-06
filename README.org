@@ -1,0 +1,11 @@
+#+title: README
+
+Set main language: mime would be zh
+Main page just a search field. Then…?
+Each page gets archived. When user online, fetch new content then save that into archive.
+Searching for article title: keep article title list
+Searching for article content: err.
+
+There is Kiwix. For offline Wikipedia, that is the best. Entire clones can be outdated though.
+
+Do this on jawiktionary first, which is a lot smaller.

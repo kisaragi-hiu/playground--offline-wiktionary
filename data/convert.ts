@@ -2,6 +2,8 @@ import * as fs from "node:fs/promises";
 import { XMLParser } from "fast-xml-parser";
 import { Database } from "bun:sqlite";
 
+const variant = process.argv[2] || "jawiktionary";
+
 const db = new Database("articles.sqlite");
 db.run(`CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
@@ -12,7 +14,7 @@ db.run(`CREATE TABLE pages (
   lastContributor TEXT
 )`);
 
-const handler = await fs.readFile("jawiktionary-latest-pages-articles.xml");
+const handler = await fs.readFile(`${variant}-latest-pages-articles.xml`);
 let parser = new XMLParser();
 const result = parser.parse(handler);
 console.log("XML parsing done");

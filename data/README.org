@@ -1,0 +1,7 @@
+#+title: Data
+
+#+begin_src sh
+make sqlite # make jawiktionary-articles.sqlite
+make sqlite variant=zhwiktionary # make zhwiktionary-articles.sqlite
+make sqlite variant=enwiktionary # make enwiktionary-articles.sqlite
+#+end_src

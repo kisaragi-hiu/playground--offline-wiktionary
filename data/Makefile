@@ -16,3 +16,6 @@ $(variant)-latest-pages-articles.xml: $(variant)-latest-pages-articles.xml.bz2
 
 .PHONY: xml
 xml: $(variant)-latest-pages-articles.xml
+
+articles.sqlite: xml convert.ts
+	bun convert.ts

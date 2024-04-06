@@ -1,3 +1,4 @@
 *.bz2
 *.xml
 *md5sums.txt
+*.sqlite

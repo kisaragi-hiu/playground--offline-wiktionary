@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "make build",
-    "beforeDevCommand": "make dev",
+    "beforeBuildCommand": "bunx astro build",
+    "beforeDevCommand": "bunx astro dev",
     "devPath": "http://localhost:4321",
     "distDir": "../public"
   },

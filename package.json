@@ -15,6 +15,9 @@
     "typescript": "^5.4.4"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.5.11"
+    "@tauri-apps/cli": "^1.5.11",
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro": "^0.13.0",
+    "prettier-plugin-svelte": "^3.2.2"
   }
 }

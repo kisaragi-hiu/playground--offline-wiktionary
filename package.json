@@ -15,6 +15,7 @@
     "typescript": "^5.4.4"
   },
   "devDependencies": {
+    "@astrojs/mdx": "^2.2.4",
     "@tauri-apps/cli": "^1.5.11",
     "prettier": "^3.2.5",
     "prettier-plugin-astro": "^0.13.0",

@@ -1,6 +1,7 @@
+dev.astro:
+	bunx astro dev
+
 dev:
-	bunx tauri dev
-start:
 	bunx tauri dev
 build:
 	bunx astro check && bunx astro build

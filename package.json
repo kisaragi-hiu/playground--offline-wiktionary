@@ -1,5 +1,5 @@
 {
-  "name": "beneficial-belt",
+  "name": "offline-wiktionary",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -13,5 +13,8 @@
     "svelte": "^4.2.12",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.11"
   }
 }

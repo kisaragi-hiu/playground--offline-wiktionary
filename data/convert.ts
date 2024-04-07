@@ -130,16 +130,16 @@ xmlStream.on("end", () => {
   db.run("COMMIT;");
   console.log("Committing transaction...done");
 
-  console.log("Compressing DB...");
-  db.loadExtension(
-    "./sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so",
-  );
-  db.run(`
-select zstd_enable_transparent('{"table": "pages",
-    "column": "text", "compression_level": 19,
-    "dict_chooser": "''i.'' || (id / 1000000)"}');
-select zstd_incremental_maintenance(null, 1);
-vacuum;
-`);
-  console.log("Compressing DB...done");
+//   console.log("Compressing DB...");
+//   db.loadExtension(
+//     "./sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so",
+//   );
+//   db.run(`
+// select zstd_enable_transparent('{"table": "pages",
+//     "column": "text", "compression_level": 19,
+//     "dict_chooser": "''i.'' || (id / 1000000)"}');
+// select zstd_incremental_maintenance(null, 1);
+// vacuum;
+// `);
+//   console.log("Compressing DB...done");
 });

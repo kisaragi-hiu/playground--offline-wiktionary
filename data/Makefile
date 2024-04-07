@@ -1,4 +1,4 @@
-variant ?= "jawiktionary"
+variant ?= jawiktionary
 wget := wget --show-progress -q
 
 target:

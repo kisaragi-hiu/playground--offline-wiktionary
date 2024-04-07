@@ -34,8 +34,8 @@ function progress(
 
 const variant = process.argv[2] || "jawiktionary";
 
-fs.rmSync("articles.sqlite", { force: true });
-const db = new Database("articles.sqlite");
+fs.rmSync(`${variant}-articles.sqlite`, { force: true });
+const db = new Database(`${variant}-articles.sqlite`);
 db.run(`CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
   title TEXT,

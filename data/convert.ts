@@ -100,7 +100,8 @@ xmlStream.on("tag:page", (page: RawPage) => {
   const obj = {
     $id: Number.parseInt(page.id),
     $title: page.title,
-    $text: text,
+    // If it's already a redirect, the text content is redundant
+    $text: page.redirect ? null : text,
     $redirect: page.redirect || null,
     $revisionId: Number.parseInt(revision.id),
     $lastModified: revision.timestamp,

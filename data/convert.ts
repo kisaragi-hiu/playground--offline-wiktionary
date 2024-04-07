@@ -36,7 +36,12 @@ const variant = process.argv[2] || "jawiktionary";
 
 fs.rmSync(`${variant}-articles.sqlite`, { force: true });
 const db = new Database(`${variant}-articles.sqlite`);
-db.run(`CREATE TABLE pages (
+db.run(`
+PRAGMA journal_mode=WAL;
+PRAGMA auto_vacuum=full;
+PRAGMA busy_timeout=2000;
+
+CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
   title TEXT,
   text TEXT,
@@ -124,4 +129,17 @@ xmlStream.on("end", () => {
   console.log("Committing transaction...");
   db.run("COMMIT;");
   console.log("Committing transaction...done");
+
+  console.log("Compressing DB...");
+  db.loadExtension(
+    "./sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so",
+  );
+  db.run(`
+select zstd_enable_transparent('{"table": "pages",
+    "column": "text", "compression_level": 19,
+    "dict_chooser": "''i.'' || (id / 1000000)"}');
+select zstd_incremental_maintenance(null, 1);
+vacuum;
+`);
+  console.log("Compressing DB...done");
 });

@@ -77,12 +77,11 @@ xmlStream.on("tag:page", (page: RawPage) => {
   const revision = page.revision;
   let text: string | undefined;
   // The HTML dump does not include appendix and thesaurus
-  if (["100", "110"].includes(page.ns)) {
-    if (typeof revision.text === "object") {
-      text = revision.text.$text;
-    } else {
-      text = revision.text;
-    }
+  // There's also a few entries that aren't in the dump for some reason
+  if (typeof revision.text === "object") {
+    text = revision.text.$text;
+  } else {
+    text = revision.text;
   }
 
   const obj = {
@@ -125,13 +124,15 @@ WHERE id = $id`);
   // @ts-ignore what the fuck are you on about a ReadableStream not being for-awaitable
   for await (const obj of htmlStream) {
     j++;
+    const html = obj.article_body.html as string;
     update.run({
-      $text: obj.article_body.html,
+      $text: html.replace(/.*<\/head>/s, ""),
       $id: obj.identifier,
-      $categories: JSON.stringify(obj.categories),
+      $categories: JSON.stringify(obj.categories?.map((x: any) => x.name)),
     });
     lastTime = progress(j, "Inserted items: ", lastTime);
   }
+  console.log();
   console.log("Committing transaction...");
   db.run("COMMIT;");
   console.log("Committing transaction...done");

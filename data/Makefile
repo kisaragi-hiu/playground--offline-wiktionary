@@ -1,5 +1,9 @@
-variant ?= jawiktionary
+variant ?= zh_min_nanwiktionary
+DATE := 20240401
 wget := wget --show-progress -q
+
+src_deps := sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so convert.ts
+data_deps := $(variant)-latest-pages-articles.xml $(variant)-htmldump.ndjson
 
 target:
 	echo $(variant)
@@ -17,10 +21,17 @@ $(variant)-latest-pages-articles.xml.bz2:
 $(variant)-latest-pages-articles.xml: $(variant)-latest-pages-articles.xml.bz2
 	bzip2 -d "$<" -k
 
-.PHONY: xml
-xml: $(variant)-latest-pages-articles.xml
+$(variant)-htmldump.ndjson:
+	curl -L "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz" | tar -zx
+	curl -L "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz" | tar -zx
+	cat $(variant)*.ndjson > keep$(variant)-htmldump.ndjson
+	rm $(variant)*.ndjson
+	mv keep$(variant)-htmldump.ndjson $(variant)-htmldump.ndjson
 
-$(variant)-articles.sqlite: $(variant)-latest-pages-articles.xml sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so convert.ts
+.PHONY: data
+data: $(data_deps)
+
+$(variant)-articles.sqlite: $(data_deps) $(src_deps)
 	bun convert.ts $(variant)
 
 .PHONY: sqlite

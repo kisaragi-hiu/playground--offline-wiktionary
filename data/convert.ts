@@ -2,7 +2,11 @@ import { Database } from "bun:sqlite";
 import * as fs from "node:fs";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
+import { TextDecoderStream } from "@stardazed/streams-text-encoding";
+import { ConcatenatedJsonParseStream } from "@std/json";
+import { pathToFileURL } from "bun";
 import { default as flow } from "xml-flow";
+import type { RawPage } from "./types.ts";
 
 function progress(
   i: number,
@@ -19,7 +23,6 @@ function progress(
       i: i,
       diff: 0,
     };
-    let diff: number;
     let update = false;
     if (last && now.time.getTime() - last.time.getTime() > 1000) {
       now.diff = i - last.i;
@@ -32,7 +35,7 @@ function progress(
   }
 }
 
-const variant = process.argv[2] || "jawiktionary";
+const variant = process.argv[2] || "zh_min_nanwiktionary";
 
 fs.rmSync(`${variant}-articles.sqlite`, { force: true });
 const db = new Database(`${variant}-articles.sqlite`);
@@ -41,68 +44,52 @@ CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
   title TEXT,
   text TEXT,
+  categories TEXT,
   redirect TEXT,
   revisionId INTEGER,
   lastModified TEXT,
   lastContributor TEXT
 )`);
 
-const filename = `${variant}-latest-pages-articles.xml`;
-const fileStream = fs.createReadStream(filename);
-const xmlStream = flow(fileStream) as Readable;
+const xmlFile = `${variant}-latest-pages-articles.xml`;
+const xmlStream = flow(fs.createReadStream(xmlFile)) as Readable;
+const htmlFile = `${variant}-htmldump.ndjson`;
+const htmlData = (await fetch(pathToFileURL(htmlFile)))
+  .body as ReadableStream<Uint8Array>;
+const htmlStream = htmlData
+  .pipeThrough(new TextDecoderStream("utf-8", {}))
+  .pipeThrough(new ConcatenatedJsonParseStream());
 
-console.log(`Inserting ${filename} into database...`);
-
-interface Page {
-  title: string;
-  ns: number;
-  id: number;
-  redirect?: string;
-  revision: {
-    id: number;
-    parentId: number;
-    timestamp: string;
-    contributor: { username: string; id: number };
-    comment: string;
-    model: string;
-    format: string;
-    text: { $text: string } | string;
-    sha1: string;
-  };
-}
-type RawPage = Page & {
-  ns: string;
-  id: string;
-  revision: {
-    id: string;
-    parentId: string;
-  };
-};
+console.log(`Inserting ${xmlFile} into database...`);
 
 const insert = db.prepare(
   "INSERT INTO pages (id,title,text,redirect,revisionId,lastModified,lastContributor) VALUES ($id,$title,$text,$redirect,$revisionId,$lastModified,$lastContributor)",
 );
-console.log("Inserting...");
+console.log("Inserting data from XML dump...");
 let i = 0;
 let lastTime: { time: Date; i: number; diff: number } | undefined;
 db.run("BEGIN TRANSACTION;");
 xmlStream.on("tag:page", (page: RawPage) => {
   i++;
-  if (page.ns !== "0") return;
+  // pages, categories, appendix, thesaurus
+  if (!["0", "14", "100", "110"].includes(page.ns)) return;
 
   const revision = page.revision;
-  let text: string;
-  if (typeof revision.text === "object") {
-    text = revision.text.$text;
-  } else {
-    text = revision.text;
+  let text: string | undefined;
+  // The HTML dump does not include appendix and thesaurus
+  if (["100", "110"].includes(page.ns)) {
+    if (typeof revision.text === "object") {
+      text = revision.text.$text;
+    } else {
+      text = revision.text;
+    }
   }
 
   const obj = {
     $id: Number.parseInt(page.id),
     $title: page.title,
     // If it's already a redirect, the text content is redundant
-    $text: page.redirect ? null : text,
+    $text: text && !page.redirect ? text : null,
     $redirect: page.redirect || null,
     $revisionId: Number.parseInt(revision.id),
     $lastModified: revision.timestamp,
@@ -119,9 +106,32 @@ xmlStream.on("tag:page", (page: RawPage) => {
   lastTime = progress(i, "Inserted items: ", lastTime);
 });
 
-xmlStream.on("end", () => {
+xmlStream.on("end", async () => {
   console.log();
   console.log(`Inserted ${i} items`);
+  console.log("Committing transaction...");
+  db.run("COMMIT;");
+  console.log("Committing transaction...done");
+
+  console.log("Inserting data from HTML dump...");
+
+  const update = db.prepare(`UPDATE pages
+SET text = $text,
+    categories = $categories
+WHERE id = $id`);
+  let j = 0;
+  let lastTime: { time: Date; i: number; diff: number } | undefined;
+  db.run("BEGIN TRANSACTION;");
+  // @ts-ignore what the fuck are you on about a ReadableStream not being for-awaitable
+  for await (const obj of htmlStream) {
+    j++;
+    update.run({
+      $text: obj.article_body.html,
+      $id: obj.identifier,
+      $categories: JSON.stringify(obj.categories),
+    });
+    lastTime = progress(j, "Inserted items: ", lastTime);
+  }
   console.log("Committing transaction...");
   db.run("COMMIT;");
   console.log("Committing transaction...done");

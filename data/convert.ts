@@ -36,9 +36,10 @@ function progress(
 }
 
 const variant = process.argv[2] || "zh_min_nanwiktionary";
+const htmldumpDir = process.argv[3] || "./";
 
-fs.rmSync(`${variant}-articles.sqlite`, { force: true });
-const db = new Database(`${variant}-articles.sqlite`);
+fs.rmSync(`${htmldumpDir}${variant}-articles.sqlite`, { force: true });
+const db = new Database(`${htmldumpDir}${variant}-articles.sqlite`);
 db.run(`
 CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
@@ -53,7 +54,7 @@ CREATE TABLE pages (
 
 const xmlFile = `${variant}-latest-pages-articles.xml`;
 const xmlStream = flow(fs.createReadStream(xmlFile)) as Readable;
-const htmlFile = `${variant}-htmldump.ndjson`;
+const htmlFile = `${htmldumpDir}${variant}-htmldump.ndjson`;
 const htmlData = (await fetch(pathToFileURL(htmlFile)))
   .body as ReadableStream<Uint8Array>;
 const htmlStream = htmlData

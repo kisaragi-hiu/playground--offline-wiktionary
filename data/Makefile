@@ -1,9 +1,10 @@
 variant ?= zh_min_nanwiktionary
 DATE := 20240401
 wget := wget --show-progress -q
+htmldumpDir := /run/media/kisaragi-hiu/Data/
 
 src_deps := sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so convert.ts
-data_deps := $(variant)-latest-pages-articles.xml $(variant)-htmldump.ndjson
+data_deps := $(variant)-latest-pages-articles.xml $(htmldumpDir)$(variant)-htmldump.ndjson
 
 target:
 	echo $(variant)
@@ -24,18 +25,15 @@ $(variant)-latest-pages-articles.xml: $(variant)-latest-pages-articles.xml.bz2
 %.tar.gz:
 	$(wget) -c "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$@"
 
-$(variant)-htmldump.ndjson: $(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz $(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz
-	tar -zxf "$(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz"
-	tar -xzf "$(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz"
-	cat $(variant)*.ndjson > keep$(variant)-htmldump.ndjson
-	rm $(variant)*.ndjson
-	mv keep$(variant)-htmldump.ndjson $(variant)-htmldump.ndjson
+$(htmldumpDir)$(variant)-htmldump.ndjson: $(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz $(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz
+	tar -zxf "$(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz" -O >> $(htmldumpDir)$(variant)-htmldump.ndjson
+	tar -xzf "$(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz" -O >> $(htmldumpDir)$(variant)-htmldump.ndjson
 
 .PHONY: data
 data: $(data_deps)
 
 $(variant)-articles.sqlite: $(data_deps) $(src_deps)
-	bun convert.ts $(variant)
+	bun convert.ts $(variant) $(htmldumpDir)
 
 .PHONY: sqlite
 sqlite: $(variant)-articles.sqlite

@@ -1,11 +1,9 @@
 #+title: README
 
-Set main language: mime would be zh
-Main page just a search field. Then…?
-Each page gets archived. When user online, fetch new content then save that into archive.
-Searching for article title: keep article title list
-Searching for article content: err.
-
-There is Kiwix. For offline Wikipedia, that is the best. Entire clones can be outdated though.
-
 Do this on jawiktionary first, which is a lot smaller.
+
+There is Kiwix. For offline Wikipedia, that is the best. For dictionary lookup, it has the benefit of not needing a connection, but when online it isn't faster than seaching online.
+
+I want an offline wiktionary client that can allow rapid lookup, eg. while translating, even with low network speeds.
+
+Wiktionary is extremely complex, which is understandable as a world wide wiki. This project will not be able to show each page perfectly, but the rendering should hopefully be good enough to be useful.

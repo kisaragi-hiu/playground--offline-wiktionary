@@ -1,18 +1,24 @@
 {
   "type": "module",
   "dependencies": {
+    "@openzim/libzim": "^3.2.0",
     "@stardazed/streams-text-encoding": "^1.0.2",
     "@std/json": "npm:@jsr/std__json",
+    "better-sqlite3": "^9.5.0",
+    "jiti": "^1.21.0",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {
-    "@types/xml-flow": "^1.0.4",
-    "type-fest": "^4.15.0",
     "@biomejs/biome": "^1.6.4",
+    "@types/better-sqlite3": "^7.6.9",
     "@types/bun": "^1.0.12",
-    "@types/node": "^20.12.7"
+    "@types/node": "^20.12.7",
+    "@types/xml-flow": "^1.0.4",
+    "type-fest": "^4.15.0"
   },
   "trustedDependencies": [
-    "@biomejs/biome"
+    "@biomejs/biome",
+    "@openzim/libzim",
+    "better-sqlite3"
   ]
 }

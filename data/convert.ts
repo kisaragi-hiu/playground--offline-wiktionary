@@ -136,6 +136,9 @@ WHERE id = $id`);
   console.log("Committing transaction...");
   db.run("COMMIT;");
   console.log("Committing transaction...done");
+  console.log("Vacuuming...");
+  db.run("VACUUM;");
+  console.log("Vacuuming...done");
 
   //   console.log("Compressing DB...");
   //   db.loadExtension(

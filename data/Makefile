@@ -21,12 +21,9 @@ $(variant)-latest-pages-articles.xml.bz2:
 $(variant)-latest-pages-articles.xml: $(variant)-latest-pages-articles.xml.bz2
 	bzip2 -d "$<" -k
 
-%.tar.gz:
-	$(wget) "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$@"
-
-$(variant)-htmldump.ndjson: $(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz $(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz
-	tar -zxf "$(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz"
-	tar -xzf "$(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz"
+$(variant)-htmldump.ndjson:
+	curl -L "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz" | tar -zx
+	curl -L "https://dumps.wikimedia.org/other/enterprise_html/runs/$(DATE)/$(variant)-NS14-$(DATE)-ENTERPRISE-HTML.json.tar.gz" | tar -zx
 	cat $(variant)*.ndjson > keep$(variant)-htmldump.ndjson
 	rm $(variant)*.ndjson
 	mv keep$(variant)-htmldump.ndjson $(variant)-htmldump.ndjson
@@ -35,7 +32,7 @@ $(variant)-htmldump.ndjson: $(variant)-NS0-$(DATE)-ENTERPRISE-HTML.json.tar.gz $
 data: $(data_deps)
 
 $(variant)-articles.sqlite: $(data_deps) $(src_deps)
-	bunx jiti convert.ts $(variant)
+	bun convert.ts $(variant)
 
 .PHONY: sqlite
 sqlite: $(variant)-articles.sqlite

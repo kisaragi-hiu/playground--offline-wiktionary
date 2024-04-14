@@ -64,7 +64,7 @@ const htmlStream = htmlData
 console.log(`Inserting ${xmlFile} into database...`);
 
 const insert = db.prepare(
-  "INSERT INTO pages (id,title,text,redirect,revisionId,lastModified,lastContributor) VALUES ($id,$title,$text,$redirect,$revisionId,$lastModified,$lastContributor)",
+  "INSERT INTO pages (id,title,text,redirect,revisionId,lastModified,lastContributor) VALUES (?,?,?,?,?,?,?)",
 );
 console.log("Inserting data from XML dump...");
 let i = 0;
@@ -73,7 +73,13 @@ db.run("BEGIN TRANSACTION;");
 xmlStream.on("tag:page", (page: RawPage) => {
   i++;
   // pages, categories, appendix, thesaurus
-  if (!["0", "14", "100", "110"].includes(page.ns)) return;
+  if (
+    page.ns !== "0" &&
+    page.ns !== "14" &&
+    page.ns !== "100" &&
+    page.ns !== "110"
+  )
+    return;
 
   const revision = page.revision;
   let text: string | undefined;
@@ -85,21 +91,30 @@ xmlStream.on("tag:page", (page: RawPage) => {
     text = revision.text;
   }
 
-  const obj = {
-    $id: Number.parseInt(page.id),
-    $title: page.title,
-    // If it's already a redirect, the text content is redundant
-    $text: text && !page.redirect ? text : null,
-    $redirect: page.redirect || null,
-    $revisionId: Number.parseInt(revision.id),
-    $lastModified: revision.timestamp,
-    $lastContributor: revision.contributor.username,
-  };
-
   try {
-    insert.run(obj);
+    insert.run(
+      Number.parseInt(page.id),
+      page.title,
+      // If it's already a redirect, the text content is redundant
+      text && !page.redirect ? text : null,
+      page.redirect || null,
+      Number.parseInt(revision.id),
+      revision.timestamp,
+      revision.contributor.username,
+    );
   } catch (e) {
-    console.error(JSON.stringify(obj));
+    console.error(
+      JSON.stringify({
+        $id: Number.parseInt(page.id),
+        $title: page.title,
+        // If it's already a redirect, the text content is redundant
+        $text: text && !page.redirect ? text : null,
+        $redirect: page.redirect || null,
+        $revisionId: Number.parseInt(revision.id),
+        $lastModified: revision.timestamp,
+        $lastContributor: revision.contributor.username,
+      }),
+    );
     console.error(JSON.stringify(e));
     throw e;
   }

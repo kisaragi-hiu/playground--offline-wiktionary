@@ -28,10 +28,14 @@
     a {
         @apply font-medium text-blue-800 underline-offset-4 hover:underline;
     }
+    ul,
+    ol {
+        @apply [&:not(li>*)]:my-6 ml-6 [&>li]:mt-2;
+    }
     ul {
-        @apply my-6 ml-6 list-disc [&>li]:mt-2;
+        @apply list-disc;
     }
     ol {
-        @apply my-6 ml-6 list-decimal [&>li]:mt-2;
+        @apply list-decimal;
     }
 }

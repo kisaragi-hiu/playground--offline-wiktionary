@@ -57,12 +57,6 @@ CREATE TABLE pages (
 const xmlFile = `${variant}-latest-pages-articles.xml`;
 const xmlStream = flow(fs.createReadStream(xmlFile)) as Readable;
 const htmlFile = `${htmldumpDir}${variant}-htmldump.ndjson`;
-const htmlData = (await fetch(pathToFileURL(htmlFile)))
-  .body as ReadableStream<Uint8Array>;
-const htmlStream = htmlData
-  .pipeThrough(new TextDecoderStream("utf-8", {}))
-  .pipeThrough(new TextLineStream())
-  .pipeThrough(new JsonParseStream());
 
 console.log(`Inserting ${xmlFile} into database...`);
 
@@ -150,6 +144,19 @@ WHERE id = $id`);
   let j = 0;
   let lastTime: { time: Date; i: number; diff: number } | undefined;
   db.run("BEGIN TRANSACTION;");
+
+  const htmlData = (await fetch(pathToFileURL(htmlFile)))
+    .body as ReadableStream<Uint8Array>;
+  const htmlStream = htmlData
+    .pipeThrough(new TextDecoderStream("utf-8", {}))
+    .pipeThrough(new TextLineStream())
+    .pipeThrough(
+      new JsonParseStream({
+        readableStrategy: new CountQueuingStrategy({
+          highWaterMark: 32 * 1024,
+        }),
+      }),
+    );
   // @ts-ignore what the fuck are you on about a ReadableStream not being for-awaitable
   for await (const rawObj of htmlStream) {
     j++;

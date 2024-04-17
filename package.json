@@ -18,8 +18,10 @@
     "vite": "^5.0.3"
   },
   "type": "module",
-  "trustedDependencies": ["@biomejs/biome"],
+  "trustedDependencies": ["@biomejs/biome", "@sveltejs/kit", "better-sqlite3", "esbuild", "svelte-preprocess"],
   "dependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "better-sqlite3": "^9.5.0",
     "tailwindcss": "^3.4.3"
   }
 }

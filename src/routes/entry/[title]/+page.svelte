@@ -1,3 +1,8 @@
 <script lang="ts">
   export let data;
 </script>
+
+<h1>{data.title}</h1>
+<div>
+  {@html data.text}
+</div>

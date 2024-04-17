@@ -147,7 +147,8 @@ WHERE id = $id`);
 
   const htmlPath = `${htmldumpDir}${variant}-htmldump.ndjson`;
   const htmlFile = await open(htmlPath);
-  const htmlStream = htmlFile.readableWebStream()
+  const htmlStream = htmlFile
+    .readableWebStream()
     .pipeThrough(new TextDecoderStream("utf-8", {}))
     .pipeThrough(new TextLineStream())
     .pipeThrough(
@@ -163,7 +164,7 @@ WHERE id = $id`);
     const obj = rawObj as Article;
     const html = obj.article_body.html;
     update.run({
-      $text: html.replace(/.*<\/head>/s, ""),
+      $text: html.replace(/.*<\/head>/s, "").replace(/class="[^"]"/g, ""),
       $id: obj.identifier,
       // Storing the IDs in an JSON array should take much less space than
       // storing the names.

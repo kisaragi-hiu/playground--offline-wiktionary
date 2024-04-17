@@ -1,12 +1,17 @@
-dev.astro:
-	bunx astro dev
-
 dev:
-	bunx tauri dev
+	bunx vite dev
 build:
-	bunx astro check && bunx astro build
+	bunx vite build
 preview:
-	bunx astro preview
+	bunx vite preview
+
+check:
+	bunx svelte-kit sync && bunx svelte-check --tsconfig ./tsconfig.json
+check.watch:
+	bunx svelte-kit sync && bunx svelte-check --tsconfig ./tsconfig.json --watch
+
+lint:
+	bunx prettier --check .
 
 format:
-	bunx prettier -w src/
+	bunx prettier --write .

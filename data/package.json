@@ -1,16 +1,19 @@
 {
   "type": "module",
   "dependencies": {
+    "better-sqlite3": "^9.5.0",
+    "jiti": "^1.21.0",
     "ndjson": "^2.0.0",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.6.4",
+    "@types/better-sqlite3": "^7.6.9",
     "@types/bun": "^1.1.0",
     "@types/ndjson": "^2.0.4",
     "@types/node": "^20.12.7",
     "@types/xml-flow": "^1.0.4",
     "type-fest": "^4.15.0"
   },
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": ["@biomejs/biome", "better-sqlite3"]
 }

@@ -33,7 +33,7 @@ $(htmldumpDir)$(variant)-htmldump.ndjson: $(variant)-NS0-$(DATE)-ENTERPRISE-HTML
 data: $(data_deps)
 
 $(variant)-articles.sqlite: $(data_deps) $(src_deps)
-	bun convert.ts $(variant) $(htmldumpDir)
+	bunx jiti convert.ts $(variant) $(htmldumpDir)
 
 .PHONY: sqlite
 sqlite: $(variant)-articles.sqlite

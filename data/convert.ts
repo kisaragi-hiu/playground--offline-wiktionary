@@ -1,7 +1,7 @@
-import { Database } from "bun:sqlite";
 import { open, rm } from "node:fs/promises";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
+import Database from "better-sqlite3";
 import { parse } from "ndjson";
 import { default as flow } from "xml-flow";
 import type { Article, RawPage } from "./types.ts";
@@ -38,7 +38,7 @@ const htmldumpDir = process.argv[3] || "./";
 
 await rm(`${htmldumpDir}${variant}-articles.sqlite`, { force: true });
 const db = new Database(`${htmldumpDir}${variant}-articles.sqlite`);
-db.run(`
+db.exec(`
 PRAGMA auto_vacuum = 1;
 CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
@@ -67,7 +67,7 @@ const categories: Record<string, number> = {};
 console.log("Inserting data from XML dump...");
 let i = 0;
 let lastTime: { time: Date; i: number; diff: number } | undefined;
-db.run("BEGIN TRANSACTION;");
+db.exec("BEGIN TRANSACTION;");
 xmlStream.on("tag:page", (page: RawPage) => {
   i++;
   // pages, categories, appendix, thesaurus
@@ -129,7 +129,7 @@ xmlStream.on("end", async () => {
   console.log();
   console.log(`Inserted ${i} items`);
   console.log("Committing transaction...");
-  db.run("COMMIT;");
+  db.exec("COMMIT;");
   console.log("Committing transaction...done");
 
   console.log("Inserting data from HTML dump...");
@@ -140,7 +140,7 @@ SET text = $text,
 WHERE id = $id`);
   let j = 0;
   let lastTime: { time: Date; i: number; diff: number } | undefined;
-  db.run("BEGIN TRANSACTION;");
+  db.exec("BEGIN TRANSACTION;");
 
   const htmlPath = `${htmldumpDir}${variant}-htmldump.ndjson`;
   const htmlFile = await open(htmlPath);
@@ -149,15 +149,15 @@ WHERE id = $id`);
     const obj = rawObj as Article;
     const html = obj.article_body.html;
     update.run({
-      $text: html
+      text: html
         .replace(/.*<\/head>/s, "")
         .replace(/(class|style)="[^"]*"/g, "")
         .replace(/data-mw=[^ ]+ /g, "")
         .replace(/<\/html>/g, ""),
-      $id: obj.identifier,
+      id: obj.identifier,
       // Storing the IDs in an JSON array should take much less space than
       // storing the names.
-      $categories: JSON.stringify(
+      categories: JSON.stringify(
         obj.categories?.map(({ name }) => categories[name] || name),
       ),
     });
@@ -165,17 +165,17 @@ WHERE id = $id`);
   }
   console.log();
   console.log("Committing transaction...");
-  db.run("COMMIT;");
+  db.exec("COMMIT;");
   console.log("Committing transaction...done");
   // console.log("Vacuuming...");
-  // db.run("VACUUM;");
+  // db.exec("VACUUM;");
   // console.log("Vacuuming...done");
 
   //   console.log("Compressing DB...");
   //   db.loadExtension(
   //     "./sqlite_zstd-v0.3.2-x86_64-unknown-linux-gnu/libsqlite_zstd.so",
   //   );
-  //   db.run(`
+  //   db.exec(`
   // select zstd_enable_transparent('{"table": "pages",
   //     "column": "text", "compression_level": 19,
   //     "dict_chooser": "''i.'' || (id / 1000000)"}');

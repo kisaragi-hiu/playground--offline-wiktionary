@@ -12,11 +12,8 @@
 
     "strict": true,
     "noEmit": true,
+    "lib": ["esnext"],
 
-    "baseUrl": ".",
-    "paths": {
-      "@*": ["src/*"],
-      "$lib/*": ["src/lib/*"]
-    }
+    "baseUrl": "."
   }
 }

@@ -1,0 +1,34 @@
+/* https://shadcn-svelte.com/docs/typography */
+
+.prose {
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply scroll-m-20 tracking-tight;
+    }
+    h1 {
+        @apply text-4xl font-extrabold lg:text-5xl;
+    }
+    h2 {
+        @apply border-b pb-2 text-3xl font-semibold transition-colors first:mt-0;
+    }
+    h3 {
+        @apply text-2xl font-semibold;
+    }
+    h4 {
+        @apply text-xl font-semibold;
+    }
+    p {
+        @apply leading-7 [&:not(:first-child)]:mt-6;
+    }
+    blockquote {
+        @apply mt-6 border-l-2 pl-6 italic;
+    }
+    a {
+        @apply font-medium text-blue-700 underline underline-offset-4;
+    }
+    ul {
+        @apply my-6 ml-6 list-disc [&>li]:mt-2;
+    }
+}

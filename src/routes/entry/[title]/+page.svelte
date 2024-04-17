@@ -2,7 +2,7 @@
   export let data;
 </script>
 
-<h1>{data.title}</h1>
-<div>
+<div class="prose">
+  <h1>{data.title}</h1>
   {@html data.text}
 </div>

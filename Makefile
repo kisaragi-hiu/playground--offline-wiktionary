@@ -11,7 +11,7 @@ check.watch:
 	bunx svelte-kit sync && bunx svelte-check --tsconfig ./tsconfig.json --watch
 
 lint:
-	bunx prettier --check .
+	bunx prettier --check src/
 
 format:
-	bunx prettier --write .
+	bunx prettier --write src/

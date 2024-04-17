@@ -12,6 +12,20 @@
     document
       .querySelectorAll('table[typeof="mw:Transclusion"]')
       ?.forEach((x) => x.remove());
+    // Get rid of transcluded text that hasn't been converted to HTML
+    document.querySelectorAll('div[typeof="mw:Transclusion"]')?.forEach((x) => {
+      for (const child of x.childNodes) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          child.remove();
+        }
+      }
+    });
+    document
+      .querySelectorAll('div[typeof="mw:Transclusion"] a')
+      ?.forEach((x) => {
+        // TODO: fix translation section's list not showing language and linking
+        // to inexistant pages
+      });
     for (const aElem of document.querySelectorAll('a[href*="redlink=1"]')) {
       const parent = aElem.parentNode;
       if (parent) {

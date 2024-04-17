@@ -2,8 +2,8 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^9.5.0",
-    "jiti": "^1.21.0",
     "ndjson": "^2.0.0",
+    "tsx": "^4.7.2",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {
@@ -15,5 +15,5 @@
     "@types/xml-flow": "^1.0.4",
     "type-fest": "^4.15.0"
   },
-  "trustedDependencies": ["@biomejs/biome", "better-sqlite3"]
+  "trustedDependencies": ["@biomejs/biome", "better-sqlite3", "esbuild"]
 }

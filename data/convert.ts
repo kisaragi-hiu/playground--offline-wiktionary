@@ -154,7 +154,7 @@ WHERE id = $id`);
   for await (const rawObj of htmlStream) {
     j++;
     const obj = rawObj as Article;
-    const html = obj.article_body.html as string;
+    const html = obj.article_body.html;
     update.run({
       $text: html.replace(/.*<\/head>/s, ""),
       $id: obj.identifier,

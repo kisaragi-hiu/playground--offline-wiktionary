@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import * as fs from "node:fs";
+import { rm, open } from "node:fs/promises";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
 import { TextDecoderStream } from "@stardazed/streams-text-encoding";
@@ -39,7 +39,7 @@ function progress(
 const variant = process.argv[2] || "zh_min_nanwiktionary";
 const htmldumpDir = process.argv[3] || "./";
 
-fs.rmSync(`${htmldumpDir}${variant}-articles.sqlite`, { force: true });
+await rm(`${htmldumpDir}${variant}-articles.sqlite`, { force: true });
 const db = new Database(`${htmldumpDir}${variant}-articles.sqlite`);
 db.run(`
 PRAGMA auto_vacuum = 1;
@@ -54,11 +54,11 @@ CREATE TABLE pages (
   lastContributor TEXT
 )`);
 
-const xmlFile = `${variant}-latest-pages-articles.xml`;
-const xmlStream = flow(fs.createReadStream(xmlFile)) as Readable;
-const htmlFile = `${htmldumpDir}${variant}-htmldump.ndjson`;
+const xmlPath = `${variant}-latest-pages-articles.xml`;
+const xmlFile = await open(xmlPath);
+const xmlStream = flow(xmlFile.createReadStream()) as Readable;
 
-console.log(`Inserting ${xmlFile} into database...`);
+console.log(`Inserting ${xmlPath} into database...`);
 
 const insert = db.prepare(
   "INSERT INTO pages (id,title,text,redirect,revisionId,lastModified,lastContributor) VALUES (?,?,?,?,?,?,?)",
@@ -145,9 +145,9 @@ WHERE id = $id`);
   let lastTime: { time: Date; i: number; diff: number } | undefined;
   db.run("BEGIN TRANSACTION;");
 
-  const htmlData = (await fetch(pathToFileURL(htmlFile)))
-    .body as ReadableStream<Uint8Array>;
-  const htmlStream = htmlData
+  const htmlPath = `${htmldumpDir}${variant}-htmldump.ndjson`;
+  const htmlFile = await open(htmlPath);
+  const htmlStream = htmlFile.readableWebStream()
     .pipeThrough(new TextDecoderStream("utf-8", {}))
     .pipeThrough(new TextLineStream())
     .pipeThrough(

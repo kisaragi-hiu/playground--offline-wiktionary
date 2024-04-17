@@ -6,7 +6,7 @@ import { TextDecoderStream } from "@stardazed/streams-text-encoding";
 import { ConcatenatedJsonParseStream } from "@std/json";
 import { pathToFileURL } from "bun";
 import { default as flow } from "xml-flow";
-import type { RawPage } from "./types.ts";
+import type { Article, RawPage } from "./types.ts";
 
 function progress(
   i: number,
@@ -66,6 +66,10 @@ console.log(`Inserting ${xmlFile} into database...`);
 const insert = db.prepare(
   "INSERT INTO pages (id,title,text,redirect,revisionId,lastModified,lastContributor) VALUES (?,?,?,?,?,?,?)",
 );
+// This would be a large record of every category to its page ID
+// On the other hand, enwiktionary's NS14 is 7.2G uncompressed including the raw
+// HTML, so maybe it's not that bad...
+const categories: Record<string, number> = {};
 console.log("Inserting data from XML dump...");
 let i = 0;
 let lastTime: { time: Date; i: number; diff: number } | undefined;
@@ -81,6 +85,12 @@ xmlStream.on("tag:page", (page: RawPage) => {
   )
     return;
 
+  // Remember categories for later
+  const id = Number.parseInt(page.id);
+  if (page.ns === "14") {
+    categories[page.title] = id;
+  }
+
   const revision = page.revision;
   let text: string | undefined;
   // The HTML dump does not include appendix and thesaurus
@@ -93,7 +103,7 @@ xmlStream.on("tag:page", (page: RawPage) => {
 
   try {
     insert.run(
-      Number.parseInt(page.id),
+      id,
       page.title,
       // If it's already a redirect, the text content is redundant
       text && !page.redirect ? text : null,
@@ -105,7 +115,7 @@ xmlStream.on("tag:page", (page: RawPage) => {
   } catch (e) {
     console.error(
       JSON.stringify({
-        $id: Number.parseInt(page.id),
+        $id: id,
         $title: page.title,
         // If it's already a redirect, the text content is redundant
         $text: text && !page.redirect ? text : null,
@@ -138,13 +148,18 @@ WHERE id = $id`);
   let lastTime: { time: Date; i: number; diff: number } | undefined;
   db.run("BEGIN TRANSACTION;");
   // @ts-ignore what the fuck are you on about a ReadableStream not being for-awaitable
-  for await (const obj of htmlStream) {
+  for await (const rawObj of htmlStream) {
     j++;
+    const obj = rawObj as Article;
     const html = obj.article_body.html as string;
     update.run({
       $text: html.replace(/.*<\/head>/s, ""),
       $id: obj.identifier,
-      $categories: JSON.stringify(obj.categories?.map((x: any) => x.name)),
+      // Storing the IDs in an JSON array should take much less space than
+      // storing the names.
+      $categories: JSON.stringify(
+        obj.categories?.map(({ name }) => categories[name]),
+      ),
     });
     lastTime = progress(j, "Inserted items: ", lastTime);
   }

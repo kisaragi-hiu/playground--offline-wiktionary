@@ -158,7 +158,7 @@ WHERE id = $id`);
       // Storing the IDs in an JSON array should take much less space than
       // storing the names.
       $categories: JSON.stringify(
-        obj.categories?.map(({ name }) => categories[name]),
+        obj.categories?.map(({ name }) => categories[name] || name),
       ),
     });
     lastTime = progress(j, "Inserted items: ", lastTime);

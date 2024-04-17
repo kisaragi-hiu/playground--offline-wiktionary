@@ -1,11 +1,8 @@
 import { Database } from "bun:sqlite";
-import { rm, open } from "node:fs/promises";
+import { open, rm } from "node:fs/promises";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
-import { TextDecoderStream } from "@stardazed/streams-text-encoding";
-import { JsonParseStream } from "@std/json";
-import { TextLineStream } from "@std/streams";
-import { pathToFileURL } from "bun";
+import readNdjsonStream from "ndjson-readablestream";
 import { default as flow } from "xml-flow";
 import type { Article, RawPage } from "./types.ts";
 
@@ -147,24 +144,17 @@ WHERE id = $id`);
 
   const htmlPath = `${htmldumpDir}${variant}-htmldump.ndjson`;
   const htmlFile = await open(htmlPath);
-  const htmlStream = htmlFile
-    .readableWebStream()
-    .pipeThrough(new TextDecoderStream("utf-8", {}))
-    .pipeThrough(new TextLineStream())
-    .pipeThrough(
-      new JsonParseStream({
-        readableStrategy: new CountQueuingStrategy({
-          highWaterMark: 32 * 1024,
-        }),
-      }),
-    );
-  // @ts-ignore what the fuck are you on about a ReadableStream not being for-awaitable
-  for await (const rawObj of htmlStream) {
+  const htmlStream = htmlFile.readableWebStream();
+  for await (const rawObj of readNdjsonStream(htmlStream)) {
     j++;
     const obj = rawObj as Article;
     const html = obj.article_body.html;
     update.run({
-      $text: html.replace(/.*<\/head>/s, "").replace(/class="[^"]"/g, ""),
+      $text: html
+        .replace(/.*<\/head>/s, "")
+        .replace(/(class|style)="[^"]*"/g, "")
+        .replace(/data-mw=[^ ]+ /g, "")
+        .replace(/<\/html>/g, ""),
       $id: obj.identifier,
       // Storing the IDs in an JSON array should take much less space than
       // storing the names.

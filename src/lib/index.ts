@@ -10,5 +10,8 @@ const db = new Database(
 const stmtExactArticle = db.prepare("select * from pages where title = ?");
 
 export function getExactArticle(title: string) {
-  return stmtExactArticle.get(title) as Article | undefined;
+  console.log(`Getting article for ${title}...`);
+  const value = stmtExactArticle.get(title) as Article | undefined;
+  console.log(`Getting article for ${title}...done`);
+  return value;
 }

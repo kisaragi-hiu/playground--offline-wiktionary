@@ -2,9 +2,7 @@ import { Database } from "bun:sqlite";
 import { open, rm } from "node:fs/promises";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
-import { TextDecoderStream } from "@stardazed/streams-text-encoding";
-import { JsonParseStream } from "@std/json";
-import { TextLineStream } from "@std/streams";
+import { parse } from "ndjson";
 import { default as flow } from "xml-flow";
 import type { Article, RawPage } from "./types.ts";
 
@@ -146,18 +144,7 @@ WHERE id = $id`);
 
   const htmlPath = `${htmldumpDir}${variant}-htmldump.ndjson`;
   const htmlFile = await open(htmlPath);
-  const htmlStream = htmlFile
-    .readableWebStream()
-    .pipeThrough(new TextDecoderStream("utf-8", {}))
-    .pipeThrough(new TextLineStream())
-    .pipeThrough(
-      new JsonParseStream({
-        readableStrategy: new CountQueuingStrategy({
-          highWaterMark: 32 * 1024,
-        }),
-      }),
-    );
-  for await (const rawObj of htmlStream) {
+  for await (const rawObj of htmlFile.createReadStream().pipe(parse())) {
     j++;
     const obj = rawObj as Article;
     const html = obj.article_body.html;

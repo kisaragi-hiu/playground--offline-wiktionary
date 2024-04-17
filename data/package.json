@@ -1,15 +1,13 @@
 {
   "type": "module",
   "dependencies": {
-    "@stardazed/streams-text-encoding": "^1.0.2",
-    "@std/json": "npm:@jsr/std__json",
-    "@std/streams": "npm:@jsr/std__streams",
-    "ndjson-readablestream": "^1.1.0",
+    "ndjson": "^2.0.0",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.6.4",
     "@types/bun": "^1.1.0",
+    "@types/ndjson": "^2.0.4",
     "@types/node": "^20.12.7",
     "@types/xml-flow": "^1.0.4",
     "type-fest": "^4.15.0"

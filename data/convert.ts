@@ -153,7 +153,6 @@ WHERE id = $id`);
         .replace(/.*<\/head>/s, "")
         .replace(/(class|style)="[^"]*"/g, "")
         .replace(/data-mw=[^ ]+ /g, "")
-        .replace(/<img [^>]+>/g, "")
         .replace(/<\/html>/g, ""),
       id: obj.identifier,
       // Storing the IDs in an JSON array should take much less space than

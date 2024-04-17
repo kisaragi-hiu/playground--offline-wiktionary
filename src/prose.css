@@ -26,9 +26,12 @@
         @apply mt-6 border-l-2 pl-6 italic;
     }
     a {
-        @apply font-medium text-blue-700 underline underline-offset-4;
+        @apply font-medium text-blue-800 underline-offset-4 hover:underline;
     }
     ul {
         @apply my-6 ml-6 list-disc [&>li]:mt-2;
+    }
+    ol {
+        @apply my-6 ml-6 list-decimal [&>li]:mt-2;
     }
 }

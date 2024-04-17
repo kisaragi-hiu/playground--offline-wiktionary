@@ -41,6 +41,7 @@ const htmldumpDir = process.argv[3] || "./";
 fs.rmSync(`${htmldumpDir}${variant}-articles.sqlite`, { force: true });
 const db = new Database(`${htmldumpDir}${variant}-articles.sqlite`);
 db.run(`
+PRAGMA auto_vacuum = 1;
 CREATE TABLE pages (
   id INTEGER PRIMARY KEY,
   title TEXT,

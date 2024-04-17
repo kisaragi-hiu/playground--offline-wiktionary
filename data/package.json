@@ -3,6 +3,7 @@
   "dependencies": {
     "@stardazed/streams-text-encoding": "^1.0.2",
     "@std/json": "npm:@jsr/std__json",
+    "@std/streams": "npm:@jsr/std__streams",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {

@@ -3,7 +3,8 @@ import * as fs from "node:fs";
 import readline from "node:readline";
 import type { Readable } from "node:stream";
 import { TextDecoderStream } from "@stardazed/streams-text-encoding";
-import { ConcatenatedJsonParseStream } from "@std/json";
+import { JsonParseStream } from "@std/json";
+import { TextLineStream } from "@std/streams";
 import { pathToFileURL } from "bun";
 import { default as flow } from "xml-flow";
 import type { Article, RawPage } from "./types.ts";
@@ -60,7 +61,8 @@ const htmlData = (await fetch(pathToFileURL(htmlFile)))
   .body as ReadableStream<Uint8Array>;
 const htmlStream = htmlData
   .pipeThrough(new TextDecoderStream("utf-8", {}))
-  .pipeThrough(new ConcatenatedJsonParseStream());
+  .pipeThrough(new TextLineStream())
+  .pipeThrough(new JsonParseStream());
 
 console.log(`Inserting ${xmlFile} into database...`);
 
